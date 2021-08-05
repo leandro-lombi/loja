@@ -1,3 +1,4 @@
+<!-- embed o código HTML para conversar com o Go -->
 {{define "Index"}}
 <!DOCTYPE html>
 <html lang="en">
@@ -30,18 +31,15 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <!-- Código GO -->
+                        {{range .}}
                         <tr>
-                            <td>Camiseta</td>
-                            <td>Bem bonita</td>
-                            <td>29</td>
-                            <td>10</td>
+                            <td>{{.Nome}}</td>
+                            <td>{{.Descricao}}</td>
+                            <td>{{.Preco}}</td>
+                            <td>{{.Quantidade}}</td>
                         </tr>
-                        <tr>
-                            <td>Notebook</td>
-                            <td>Muito rápido</td>
-                            <td>1999</td>
-                            <td>2</td>
-                        </tr>
+                        {{end}}
                     </tbody>
                 </table>
             </div>
