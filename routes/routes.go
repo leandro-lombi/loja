@@ -10,4 +10,5 @@ func CarregaRotas() {
 	// Toda requisição para o /, quem irá atender será o index
 	http.HandleFunc("/", controllers.Index)
 	http.HandleFunc("/new", controllers.New)
+	http.HandleFunc("/insert", controllers.Insert)
 }
