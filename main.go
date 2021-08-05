@@ -1,11 +1,25 @@
 package main
 
 import (
+	"database/sql"
 	"net/http"
 	"text/template"
+
+	_ "github.com/lib/pq"
 )
 
+func conectaComBancoDeDados() *sql.DB {
+	// A senha em uma aplicação real, não deve ser passada dessa forma
+	conexao := "user=postgres dbname=leandro_loja password=12345678 host=localhost sslmode=disable"
+	db, err := sql.Open("postgres", conexao)
+	if err != nil {
+		panic(err.Error())
+	}
+	return db
+}
+
 type Produto struct {
+	Id int
 	Nome       string
 	Descricao  string
 	Preco      float64
@@ -22,13 +36,34 @@ func main() {
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
-	// slice de produto
-	produtos := []Produto{
-		{"Camiseta", "Algodão", 29.9, 2},
-		{"Tenis", "Azul", 349.5, 4},
-		{"Meia", "Branca", 8.49, 15},
-		{"Sapato", "Marrom", 143.75, 6},
+	db := conectaComBancoDeDados()
+
+	selectTodosProdutos, err := db.Query("select * from produtos")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	p := Produto{}
+	produtos := []Produto{}
+
+	for selectTodosProdutos.Next(){
+		var id, quantidade int
+		var nome, descricao string
+		var preco float64
+
+		err = selectTodosProdutos.Scan(&id, &nome, &descricao, &preco, &quantidade)
+		if err != nil {
+			panic(err.Error())
+		}
+
+		p.Nome = nome
+		p.Descricao = descricao
+		p.Preco = preco
+		p.Quantidade = quantidade
+
+		produtos = append(produtos, p)
 	}
 
 	templates.ExecuteTemplate(w, "Index", produtos)
+	defer db.Close()
 }
