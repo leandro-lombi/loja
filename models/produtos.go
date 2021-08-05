@@ -1,6 +1,8 @@
 package models
 
-import "github.com/lnl/loja/db"
+import (
+	"github.com/lnl/loja/db"
+)
 
 type Produto struct {
 	Id         int
@@ -13,7 +15,7 @@ type Produto struct {
 func BuscaTodosOsProdutos() []Produto {
 	db := db.ConectaComBancoDeDados()
 
-	selectTodosProdutos, err := db.Query("select * from produtos")
+	selectTodosProdutos, err := db.Query("select * from produtos order by id")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -63,5 +65,46 @@ func DeletarProduto(id string) {
 	}
 
 	deletaProduto.Exec(id)
+	defer db.Close()
+}
+
+func EditarProduto(id string) Produto {
+	db := db.ConectaComBancoDeDados()
+	produto, err := db.Query("select * from produtos where id=$1", id)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	editarProduto := Produto{}
+
+	for produto.Next() {
+		var id, quantidade int
+		var nome, descricao string
+		var preco float64
+
+		err := produto.Scan(&id, &nome, &descricao, &preco, &quantidade)
+		if err != nil {
+			panic(err.Error())
+		}
+
+		editarProduto.Id = id
+		editarProduto.Nome = nome
+		editarProduto.Descricao = descricao
+		editarProduto.Preco = preco
+		editarProduto.Quantidade = quantidade
+	}
+	defer db.Close()
+	return editarProduto
+}
+
+func AtualizarProduto(id int, nome, descricao string, preco float64, quantidade int) {
+	db := db.ConectaComBancoDeDados()
+
+	atualizaDados, err := db.Prepare("update produtos set nome=$1, descricao=$2, preco=$3, quantidade=$4 where id=$5")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	atualizaDados.Exec(nome, descricao, preco, quantidade, id)
 	defer db.Close()
 }
